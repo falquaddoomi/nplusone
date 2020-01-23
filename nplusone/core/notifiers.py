@@ -36,6 +36,7 @@ class LogNotifier(Notifier):
         log_func_map = {
             logging.DEBUG: self.logger.debug,
             logging.INFO: self.logger.info,
+            logging.WARN: self.logger.warn,
         }
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
