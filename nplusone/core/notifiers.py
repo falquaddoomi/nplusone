@@ -2,6 +2,7 @@
 
 import logging
 import traceback
+import structlog
 
 from nplusone.core import exceptions
 
@@ -29,14 +30,16 @@ class LogNotifier(Notifier):
     ENABLED_DEFAULT = True
 
     def __init__(self, config):
-        self.logger = config.get('NPLUSONE_LOGGER',
-                                 logging.getLogger('nplusone'))
+        self.logger = config.get('NPLUSONE_LOGGER', structlog.get_logger())
         self.level = config.get('NPLUSONE_LOG_LEVEL', logging.DEBUG)
+
         self.verbose = config.get('NPLUSONE_VERBOSE', False)
         log_func_map = {
-            logging.DEBUG: self.logger.debug,
             logging.INFO: self.logger.info,
             logging.WARN: self.logger.warn,
+            logging.ERROR: self.logger.error,
+            logging.DEBUG: self.logger.debug,
+            logging.CRITICAL: self.logger.critical,
         }
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
