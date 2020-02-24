@@ -36,6 +36,7 @@ nosetests.xml
 
 # Mypy
 .mypy_cache
+.dmypy.json
 
 # Complexity
 output/*.html

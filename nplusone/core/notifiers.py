@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import traceback
+import pathlib
 import structlog
+import traceback
 
 from nplusone.core import exceptions
 
@@ -22,6 +23,16 @@ class Notifier(object):
 
     def notify(self, model, field):
         pass  # pragma: no cover
+
+
+def get_relevant_spark_frames():
+    stack = traceback.extract_stack()
+    relevant_frames = [
+        frame for frame in reversed(stack)
+        if frame.filename.startswith(str(pathlib.Path().absolute()))
+        and 'spark' in frame.filename
+    ]
+    return relevant_frames
 
 
 class LogNotifier(Notifier):
@@ -44,10 +55,7 @@ class LogNotifier(Notifier):
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
     def notify(self, message):
-        stack = traceback.extract_stack()
-        relevant_frames = [
-            frame for frame in reversed(stack) if 'spark' in frame.filename
-        ]
+        relevant_frames = get_relevant_spark_frames()
         relevant_frame = relevant_frames[0]
 
         # This assumes we used structlog.get_logger to create our logger.
@@ -75,10 +83,7 @@ class ErrorNotifier(Notifier):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
 
     def notify(self, message):
-        stack = traceback.extract_stack()
-        relevant_frame = [
-            frame for frame in reversed(stack) if 'spark' in frame.filename
-        ][0]
+        relevant_frame = get_relevant_spark_frames()[0]
         raise self.error(message.message + ', ' +
                          str(relevant_frame)[len('<FrameSummary '):-1])
 
