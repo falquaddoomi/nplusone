@@ -55,12 +55,6 @@ class LogNotifier(Notifier):
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
     def notify(self, message):
-        stack = traceback.extract_stack()
-        relevant_frames = [
-            frame for frame in reversed(stack)
-            if frame.filename.startswith(str(pathlib.Path().absolute()))
-            and 'spark' in frame.filename
-        ]
         relevant_frames = get_relevant_spark_frames()
         relevant_frame = relevant_frames[0]
 
@@ -89,7 +83,6 @@ class ErrorNotifier(Notifier):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
 
     def notify(self, message):
-        stack = traceback.extract_stack()
         relevant_frame = get_relevant_spark_frames()[0]
         raise self.error(message.message + ', ' +
                          str(relevant_frame)[len('<FrameSummary '):-1])
