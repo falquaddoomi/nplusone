@@ -183,6 +183,16 @@ To suppress notifications locally, use the ``ignore`` context manager: ::
         # lazy-load rows
         # ...
 
+Notes
+=======
+To bump version:
+
+- Increment the version number in `nplusone/__init__.py`.
+
+- Run `python setup.py sdist bdist_wheel`.
+
+- When ready to publish, run `python -m twine upload dist/*`.
+
 License
 =======
 
