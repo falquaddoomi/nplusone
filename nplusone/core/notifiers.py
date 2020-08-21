@@ -68,7 +68,7 @@ class LogNotifier(Notifier):
             }
 
             if self.verbose:
-                log_info['frames'] = '\n'.join([
+                log_info['frames'] = '\n' + '\n'.join([
                     f'  {frame.filename}, {frame.lineno}, {frame.name}'
                     for frame in relevant_frames[1:]
                 ])
