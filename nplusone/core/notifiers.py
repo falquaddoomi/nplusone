@@ -21,9 +21,6 @@ class Notifier(object):
     def __init__(self, config):
         self.config = config  # pragma: no cover
 
-    def is_locals_only(self):
-        return getattr(self.config, 'locals_only', True)
-
     def notify(self, model, field):
         pass  # pragma: no cover
 
@@ -45,6 +42,7 @@ class LogNotifier(Notifier):
     def __init__(self, config):
         self.logger = config.get('NPLUSONE_LOGGER', structlog.get_logger())
         self.level = config.get('NPLUSONE_LOG_LEVEL', logging.DEBUG)
+        self.is_locals_only = config.get('NPLUSONE_LOCAL_STACK', True)
 
         self.verbose = config.get('NPLUSONE_VERBOSE', False)
         log_func_map = {
@@ -57,7 +55,7 @@ class LogNotifier(Notifier):
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
     def notify(self, message):
-        relevant_frames = get_relevant_frames(locals_only=self.is_locals_only())
+        relevant_frames = get_relevant_frames(locals_only=self.is_locals_only)
 
         if len(relevant_frames) > 0:
             relevant_frame = relevant_frames[0]
@@ -87,9 +85,10 @@ class ErrorNotifier(Notifier):
 
     def __init__(self, config):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
+        self.is_locals_only = config.get('NPLUSONE_LOCAL_STACK', True)
 
     def notify(self, message):
-        frames = get_relevant_frames(locals_only=self.is_locals_only())
+        frames = get_relevant_frames(locals_only=self.is_locals_only)
         if len(frames) > 0:
             relevant_frame = get_relevant_frames()[0]
             raise self.error(message.message + ', ' +
