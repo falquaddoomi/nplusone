@@ -35,6 +35,7 @@ class NPlusOneMiddleware(MiddlewareMixin):
     def __init__(self, *args, **kwargs):
         super(NPlusOneMiddleware, self).__init__(*args, **kwargs)
         self.listeners = weakref.WeakKeyDictionary()
+        self.locals_only = True
 
     def load_config(self):
         self.notifiers = notifiers.init(vars(settings._wrapped))
@@ -42,6 +43,7 @@ class NPlusOneMiddleware(MiddlewareMixin):
             DjangoRule(**item)
             for item in getattr(settings, 'NPLUSONE_WHITELIST', [])
         ]
+        self.locals_only = getattr(settings, 'NPLUSONE_LOCAL_STACK', True)
 
     def process_request(self, request):
         self.load_config()

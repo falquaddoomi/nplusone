@@ -21,15 +21,18 @@ class Notifier(object):
     def __init__(self, config):
         self.config = config  # pragma: no cover
 
+    def is_locals_only(self):
+        return getattr(self.config, 'locals_only', True)
+
     def notify(self, model, field):
         pass  # pragma: no cover
 
 
-def get_relevant_frames():
+def get_relevant_frames(locals_only=True):
     stack = traceback.extract_stack()
     relevant_frames = [
         frame for frame in reversed(stack)
-        if frame.filename.startswith(str(pathlib.Path().absolute()))
+        if not locals_only or frame.filename.startswith(str(pathlib.Path().absolute()))
     ]
     return relevant_frames
 
@@ -54,7 +57,7 @@ class LogNotifier(Notifier):
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
     def notify(self, message):
-        relevant_frames = get_relevant_frames()
+        relevant_frames = get_relevant_frames(locals_only=self.is_locals_only())
 
         if len(relevant_frames) > 0:
             relevant_frame = relevant_frames[0]
@@ -86,7 +89,7 @@ class ErrorNotifier(Notifier):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
 
     def notify(self, message):
-        frames = get_relevant_frames()
+        frames = get_relevant_frames(locals_only=self.is_locals_only())
         if len(frames) > 0:
             relevant_frame = get_relevant_frames()[0]
             raise self.error(message.message + ', ' +
