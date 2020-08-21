@@ -82,9 +82,13 @@ class ErrorNotifier(Notifier):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
 
     def notify(self, message):
-        relevant_frame = get_relevant_frames()[0]
-        raise self.error(message.message + ', ' +
-                         str(relevant_frame)[len('<FrameSummary '):-1])
+        frames = get_relevant_frames()
+        if len(frames) > 0:
+            relevant_frame = get_relevant_frames()[0]
+            raise self.error(message.message + ', ' +
+                            str(relevant_frame)[len('<FrameSummary '):-1])
+        else:
+            raise self.error(message.message)
 
 
 def init(config):
