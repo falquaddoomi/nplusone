@@ -55,22 +55,26 @@ class LogNotifier(Notifier):
 
     def notify(self, message):
         relevant_frames = get_relevant_frames()
-        relevant_frame = relevant_frames[0]
 
-        # This assumes we used structlog.get_logger to create our logger.
-        log_info = {
-            'filename': relevant_frame.filename,
-            'line': relevant_frame.lineno,
-            'name': relevant_frame.name,
-        }
+        if len(relevant_frames) > 0:
+            relevant_frame = relevant_frames[0]
 
-        if self.verbose:
-            log_info['frames'] = '\n'.join([
-                f'{frame.filename}, {frame.lineno}, {frame.name}'
-                for frame in relevant_frames[1:]
-            ])
+            # This assumes we used structlog.get_logger to create our logger.
+            log_info = {
+                'filename': relevant_frame.filename,
+                'line': relevant_frame.lineno,
+                'name': relevant_frame.name,
+            }
 
-        self.log_func(message.message, **log_info)
+            if self.verbose:
+                log_info['frames'] = '\n'.join([
+                    f'{frame.filename}, {frame.lineno}, {frame.name}'
+                    for frame in relevant_frames[1:]
+                ])
+
+            self.log_func(message.message, **log_info)
+        else:
+            self.log_func(message.message)
 
 
 class ErrorNotifier(Notifier):
