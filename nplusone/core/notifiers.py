@@ -25,12 +25,11 @@ class Notifier(object):
         pass  # pragma: no cover
 
 
-def get_relevant_spark_frames():
+def get_relevant_frames():
     stack = traceback.extract_stack()
     relevant_frames = [
         frame for frame in reversed(stack)
         if frame.filename.startswith(str(pathlib.Path().absolute()))
-        and 'spark' in frame.filename
     ]
     return relevant_frames
 
@@ -55,7 +54,7 @@ class LogNotifier(Notifier):
         self.log_func = log_func_map.get(self.level, logging.INFO)
 
     def notify(self, message):
-        relevant_frames = get_relevant_spark_frames()
+        relevant_frames = get_relevant_frames()
         relevant_frame = relevant_frames[0]
 
         # This assumes we used structlog.get_logger to create our logger.
@@ -83,7 +82,7 @@ class ErrorNotifier(Notifier):
         self.error = config.get('NPLUSONE_ERROR', exceptions.NPlusOneError)
 
     def notify(self, message):
-        relevant_frame = get_relevant_spark_frames()[0]
+        relevant_frame = get_relevant_frames()[0]
         raise self.error(message.message + ', ' +
                          str(relevant_frame)[len('<FrameSummary '):-1])
 
