@@ -47,7 +47,7 @@ class LogNotifier(Notifier):
 
         # tweak the logging output a bit by adding a processor
         self.logger = structlog.wrap_logger(self.logger, processors=[
-            KeyValueRenderer(key_order=["filename", "line", "name", "frames"])
+            KeyValueRenderer(key_order=["filename", "line", "name", "frames"], repr_native_str=False)
         ])
 
         self.verbose = config.get('NPLUSONE_VERBOSE', False)
