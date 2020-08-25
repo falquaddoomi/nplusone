@@ -3,6 +3,7 @@
 import logging
 import pathlib
 import structlog
+from structlog.processors import KeyValueRenderer
 import traceback
 
 from nplusone.core import exceptions
@@ -43,6 +44,11 @@ class LogNotifier(Notifier):
         self.logger = config.get('NPLUSONE_LOGGER', structlog.get_logger())
         self.level = config.get('NPLUSONE_LOG_LEVEL', logging.DEBUG)
         self.is_locals_only = config.get('NPLUSONE_LOCAL_STACK', True)
+
+        # tweak the logging output a bit by adding a processor
+        self.logger = structlog.wrap_log([
+            KeyValueRenderer(key_order=["filename", "line", "name", "frames"])
+        ])
 
         self.verbose = config.get('NPLUSONE_VERBOSE', False)
         log_func_map = {
